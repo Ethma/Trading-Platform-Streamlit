@@ -13,7 +13,8 @@ def get_data():
 
 @st.cache()
 def load_quotes(asset, start, end):
-    return yf.download(asset, start, end)
+	print(asset)
+	return yf.download(asset, start, end)
 
 def home():
 	instruments = get_data()
@@ -42,14 +43,25 @@ def home():
 	if st.sidebar.checkbox('View company info', False):
 		st.table(instruments[['Security','GICS Sector','Date first added',
 		'Founded']].loc[asset])
-	if len(asset) > 0:
-		data0 = load_quotes(''.join(str(asset)), start, end)
+	if len(asset) == 1:
+		data0 = load_quotes(''.join(str(asset)[2:-2]), start, end)
 		data = data0.copy().dropna()
 		data.index.name = None
 	#	section = st.sidebar.slider('Number of quotes', min_value=30,
 	#	max_value=min([2000, data.shape[0]]),
 	#	value=500,  step=10)
 		data2 = data['Adj Close'].to_frame('Adj Close')
+		st.line_chart(data2)
+	elif len(asset) > 1:
+		print(asset)
+		data0 = load_quotes(''.join(str(asset).replace('[','').replace(']','').replace('\'','')), start, end)
+		data = data0.copy().dropna()
+		data.index.name = None
+	#	section = st.sidebar.slider('Number of quotes', min_value=30,
+	#	max_value=min([2000, data.shape[0]]),
+	#	value=500,  step=10)
+		data2 = data['Adj Close']
+		print(data2)
 		st.line_chart(data2)
 	if st.sidebar.checkbox('View statistics'):
 		st.subheader('Statistics')
@@ -60,8 +72,11 @@ def home():
 		st.write(data2)
 
 def connect():
-	st.sidebar.title('ok')
-
+	with st.form('Connection'):
+		st.text_input(label='First Name')
+		st.text_input(label='Last Name')
+		st.slider(label='Balance', min_value=0, max_value=100000, key=10)
+		submitted = st.form_submit_button('Submit 1')
 PAGES = {
 	"Home":home,
 	"Connect":connect
